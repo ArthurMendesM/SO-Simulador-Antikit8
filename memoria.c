@@ -1,6 +1,7 @@
 #include "memoria.h"
 
 page_table_entry_t page_table[TOTAL_PAGES];
+bool ram_frames[TOTAL_FRAMES];
 
 void init_memoria() {
     // Inicializa todas as páginas como vazias e não presentes na RAM
@@ -10,6 +11,10 @@ void init_memoria() {
         page_table[i].referenced = false;
         page_table[i].modified = false;
         page_table[i].last_access_t = 0;
+    }
+    // Inicializa a RAM marcando todos os 64 quadros como livres
+    for (int i = 0; i < TOTAL_FRAMES; i++) {
+        ram_frames[i] = false;
     }
 }
 
@@ -40,4 +45,30 @@ void calcular_vpn_offset(uint32_t endereco_virtual, uint32_t *vpn, uint32_t *off
         // O offset recomeça do zero na página nova, logo subtraímos os 4 KB da página par
         *offset = resto - 4096; 
     }
+}
+
+int alocar_quadros(int tamanho_kb) {
+    // Se a página for Par (4 KB), precisamos de apenas 1 quadro livre
+    if (tamanho_kb == 4) {
+        for (int i = 0; i < TOTAL_FRAMES; i++) {
+            if (ram_frames[i] == false) {
+                ram_frames[i] = true; // Ocupa o quadro
+                return i;             // Devolve o número do quadro ao sistema
+            }
+        }
+    }
+    // Se a página for Ímpar (8 KB), precisamos de 2 quadros livres CONSECUTIVOS
+    else if (tamanho_kb == 8) {
+        for (int i = 0; i < TOTAL_FRAMES - 1; i++) {
+            if (ram_frames[i] == false && ram_frames[i+1] == false) {
+                ram_frames[i] = true;     // Ocupa o primeiro quadro
+                ram_frames[i+1] = true;   // Ocupa o segundo quadro
+                return i;                 // Devolve o início do bloco alocado
+            }
+        }
+    }
+
+    // Se o código chegar aqui, significa que a RAM está cheia ou fragmentada.
+    // Retorna -1 para avisar o Integrante 2 que ele precisa de acionar o algoritmo de substituição.
+    return -1;
 }

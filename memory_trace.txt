@@ -1,0 +1,37 @@
+# ========================================================
+# TRACE DE TESTE ANTIKIT-8 (Fase de Defesa)
+# ========================================================
+# Formato: [Timestamp] [PID] [Op] [Endereco] [Tamanho_Bytes]
+
+# --- TESTE 3: Acessos normais para encher a RAM e testar Auditoria ---
+1 100 W 0 4096
+2 100 R 4096 2000
+3 100 W 8192 1000
+4 100 R 0 4096
+5 100 W 12288 1024
+6 100 R 12288 1024
+7 100 W 16384 5000
+8 100 R 16384 5000
+9 100 W 0 4096
+
+# --- TESTE 4: Mapa ASCII e Fragmentação Extrema ---
+# A linha 10 abaixo pede 100 bytes num endereço que cai em uma página ímpar (8KB).
+# O mapa ASCII será disparado aqui e mostrará um desperdício gigante (U...FFFFFFF).
+10 200 W 16384 100
+
+# --- TESTE 2: Estresse Térmico (Forçando Page Faults) ---
+# Vamos acessar endereços muito distantes para forçar o WS-Clock a trabalhar
+11 300 W 50000 1024
+12 300 W 60000 1024
+13 300 W 70000 1024
+14 300 W 80000 1024
+15 300 W 90000 1024
+16 300 W 100000 1024
+17 300 W 110000 1024
+18 300 W 120000 1024
+19 300 W 130000 1024
+20 300 W 140000 1024
+
+# --- TESTE 1: O Limite da MMU (Segmentation Fault) ---
+# Acessando o limite de 1MB (1.048.576). O SO deve barrar e nao fechar.
+21 999 W 1048576 1024

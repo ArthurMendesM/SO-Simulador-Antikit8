@@ -52,26 +52,6 @@ static uint32_t frames_needed(uint32_t vpn)
     return page_size(vpn) / FRAME_SIZE;
 }
 
-/*
- * Auditoria simples da tabela de páginas.
- * Inclui os campos present e frame_number de todas as VPNs.
- */
-static void auditar_tabela(const char *motivo)
-{
-    uint64_t hash = UINT64_C(1469598103934665603);
-
-    for (uint32_t vpn = 0; vpn < TOTAL_PAGES; vpn++) {
-        hash ^= (uint64_t)page_table[vpn].present;
-        hash *= UINT64_C(1099511628211);
-
-        hash ^= (uint64_t)page_table[vpn].frame_number;
-        hash *= UINT64_C(1099511628211);
-    }
-
-    printf("[AUDITORIA] %s | hash=%" PRIu64 "\n",
-           motivo, hash);
-}
-
 /* ---------------------------------------------------------
  * Inicialização e encerramento
  * --------------------------------------------------------- */
@@ -325,7 +305,6 @@ static bool swap_out_page(uint32_t vpn,
     printf("[WS-CLOCK] Page Out: VPN %u, quadro inicial %u\n",
            vpn, first_frame);
 
-    auditar_tabela("apos Page Out");
     return true;
 }
 
@@ -397,6 +376,5 @@ bool tratar_page_fault(uint32_t vpn,
     printf("[WS-CLOCK] Page In: VPN %u, quadro inicial %d\n",
            vpn, frame);
 
-    auditar_tabela("apos Page In");
     return true;
 }

@@ -37,4 +37,7 @@ void calcular_vpn_offset(uint32_t endereco_virtual, uint32_t *vpn, uint32_t *off
 // Retorna o índice do quadro alocado, ou -1 se a RAM estiver cheia
 int alocar_quadros(int tamanho_kb);
 
+// Simula a anomalia eletrica (Fading) zerando o Bit R na MMU
+void simular_fading_mmu();
+
 #endif // MEMORIA_H

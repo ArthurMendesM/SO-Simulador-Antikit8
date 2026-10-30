@@ -1,4 +1,5 @@
 #include "memoria.h"
+#include <stdio.h>
 
 page_table_entry_t page_table[TOTAL_PAGES];
 bool ram_frames[TOTAL_FRAMES];
@@ -19,6 +20,19 @@ void init_memoria() {
 }
 
 void calcular_vpn_offset(uint32_t endereco_virtual, uint32_t *vpn, uint32_t *offset) {
+    // Verifica se o endereço requisitado passa do limite físico do sistema.
+    // 1 Megabyte (MB) equivale a exatamente 1048576 bytes (1024 * 1024).
+    if (endereco_virtual >= 1048576) {
+       // Atribui um valor propositalmente inválido para a Página Virtual (VPN).
+       // Retorna o próprio TOTAL_PAGES (flag de erro).
+       *vpn = TOTAL_PAGES;
+       // Zera o deslocamento (offset) pois o endereço é inválido de qualquer forma.
+       *offset = 0;
+       // Interrompe a função imediatamente, impedindo que os cálculos matemáticos
+       // normais da MMU sejam executados com um endereço estourado.
+       return;
+    }
+
     /* 
      * ESTRATÉGIA DE BLOCOS DE 12 KB
      * 1 Página Par (4096 bytes) + 1 Página Ímpar (8192 bytes) = 1 Bloco de 12288 bytes.
@@ -71,4 +85,15 @@ int alocar_quadros(int tamanho_kb) {
     // Se o código chegar aqui, significa que a RAM está cheia ou fragmentada.
     // Retorna -1 para avisar o Integrante 2 que ele precisa de acionar o algoritmo de substituição.
     return -1;
+}
+
+void simular_fading_mmu() {
+    // MMU zera o bit R de uma pagina aleatoria na RAM fisicamente
+    for (int i = 0; i < TOTAL_PAGES; i++) {
+        if (page_table[i].present && page_table[i].referenced) {
+            page_table[i].referenced = false;
+            printf(" -> Bit R da VPN %d foi zerado pelo hardware (MMU).\n", i);
+            break;
+        }
+    }
 }
